@@ -63,7 +63,9 @@ namespace FlashBANG.Utilities
             previousMouseState = currentMouseState;
             currentMouseState = Mouse.GetState();
             Main.mouseScreenPos = (currentMouseState.Position.ToVector2() / 3f) - (Main.mainCamera.cameraOrigin / 3f);
-            Main.mouseWorldPos = Player.player.position + Main.mouseScreenPos;
+            Main.mouseUIPos = currentMouseState.Position.ToVector2() / 2f;
+            if (Main.gameState == Main.GameState.Playing)
+                Main.mouseWorldPos = Player.player.position + Main.mouseScreenPos;
         }
     }
 }

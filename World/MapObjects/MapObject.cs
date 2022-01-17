@@ -14,6 +14,7 @@ namespace FlashBANG.World.MapObjects
         public Vector2 position;
         public bool interactionAvailable = false;
         public bool noCollision = false;
+        public int visibiltyID = 0;
 
         public virtual void Initialize()
         { }

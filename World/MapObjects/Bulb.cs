@@ -9,12 +9,13 @@ namespace FlashBANG.World.MapObjects
     public class Bulb : MapObject
     {
         public static Texture2D bulbTexture;
-        public static SoundEffect pickUpSound;
+        public static Texture2D textureOutline;
 
-        public static Bulb CreateBulb(Vector2 position)
+        public static Bulb CreateBulb(Vector2 position, int visibilityID = 0)
         {
             Bulb bulb = new Bulb();
             bulb.position = position;
+            bulb.visibiltyID = visibilityID;
             bulb.Initialize();
             return bulb;
         }
@@ -32,14 +33,18 @@ namespace FlashBANG.World.MapObjects
         public override void OnObjectInteraction()
         {
             Player.player.heldBulbs += 1;
-            pickUpSound.Play(Main.SFXVolume, 0, 0);
+            SoundPlayer.PlayLocalSound(SoundPlayer.Sounds_BulbPickUp);
             DestroyInstance();
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(bulbTexture, hitbox, Color.White);
-            Lighting.QueueLightData(Lighting.Texture_LightRing, position, 8f);
+            if (Player.player.tileVisiblityID != visibiltyID)
+                return;
+
+            spriteBatch.Draw(bulbTexture, position, null, Color.White, 0, Vector2.Zero, 0.7f, SpriteEffects.None, 0f);
+            if (interactionAvailable)
+                spriteBatch.Draw(textureOutline, position, null, Color.White, 0, Vector2.Zero, 0.7f, SpriteEffects.None, 0f);
         }
     }
 }

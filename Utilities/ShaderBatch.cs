@@ -8,12 +8,6 @@ namespace FlashBANG.Utilities
 {
     public class ShaderBatch
     {
-        /*public static List<Texture2D> queuedTextures;
-        public static List<Vector2> queuedPositions;
-        public static List<Rectangle> queuedRects;
-        public static List<float> queuedRotations;
-        public static List<float> queuedScales;
-        public static List<Effect> queuedEffects;*/
         public static List<DrawData> queuedDraws;
 
         public struct DrawData
@@ -39,34 +33,20 @@ namespace FlashBANG.Utilities
 
         public static void InitializeShaderBatchLists()
         {
-            /*queuedTextures = new List<Texture2D>();
-            queuedPositions = new List<Vector2>();
-            queuedRects = new List<Rectangle>();
-            queuedRotations = new List<float>();
-            queuedScales = new List<float>();
-            queuedEffects = new List<Effect>();*/
-
             queuedDraws = new List<DrawData>();
         }
 
         public static void DrawQueuedShaderDraws()
         {
-            DrawData[] rgbList = SortEffectBatch(EffectID.RGBDistortion);
-            //List<DrawData> distortionList = SortEffectBatch(RGBDistortionEffect);
-            /*int numberOfDraws = queuedTextures.Count;     //Heh, one could imagine how inefficient this turned out to be
-            for (int i = 0; i < numberOfDraws; i++)
-            {
-                DrawShaderItem(queuedTextures[i], queuedPositions[i], queuedRects[i], queuedRotations[i], queuedScales[i], queuedEffects[i]);
-            }*/
+            if (queuedDraws.Count <= 0)
+                return;
 
+            DrawData[] distortionList = SortEffectBatch(EffectID.BasicDistortion);
+            DrawData[] rgbList = SortEffectBatch(EffectID.RGBDistortion);
+            DrawShaderItems(distortionList, BasicDistortionEffect);
             DrawShaderItems(rgbList, RGBDistortionEffect);
 
-            /*queuedTextures.Clear();
-            queuedPositions.Clear();
-            queuedRects.Clear();
-            queuedRotations.Clear();
-            queuedScales.Clear();
-            queuedEffects.Clear();*/
+            queuedDraws.Clear();
         }
 
         /// <summary>
@@ -98,26 +78,12 @@ namespace FlashBANG.Utilities
                 sortIndex++;
                 sortedDraws[sortIndex] = queuedDrawsClone[i];
                 queuedDraws.RemoveAt(i);
+                i--;
             }
             Array.Clear(queuedDrawsClone, 0, queuedDrawsClone.Length);
             Array.Clear(effectMatches, 0, effectMatches.Length);
 
             return sortedDraws;
-        }
-
-        /// <summary>
-        /// Queues an item for drawing. Draws at the end of the Draw step.
-        /// </summary>
-        /// <param name="effect">The effect to use while drawing</param>
-        /// <param name="texture">The texture to draw.</param>
-        public static void DrawScreen(Effect effect, RenderTarget2D texture)
-        {
-            Main._graphics.GraphicsDevice.SetRenderTarget(null);
-            Main._graphics.GraphicsDevice.Clear(Color.Black);
-
-            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, effect, null);
-            Main.spriteBatch.Draw(texture, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
         }
 
 
@@ -128,13 +94,6 @@ namespace FlashBANG.Utilities
                 rect = new Rectangle(0, 0, texture.Width, texture.Height);
             else
                 rect = (Rectangle)rectangle;
-
-            /*queuedTextures.Add(texture);
-            queuedPositions.Add(position);
-            queuedRects.Add(rect);
-            queuedRotations.Add(0f);
-            queuedScales.Add(1f);
-            queuedEffects.Add(effect);*/
 
             DrawData drawData = new DrawData();
             drawData.texture = texture;
@@ -164,13 +123,6 @@ namespace FlashBANG.Utilities
             drawData.scale = scale;
             drawData.effectID = effectID;
             queuedDraws.Add(drawData);
-        }
-
-        private static void DrawShaderItems(Texture2D texture, Vector2 position, Rectangle rect, float rotation, float scale, Effect effect)
-        {
-            Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, effect, Main.mainCamera.cameraMatrix);
-            Main.spriteBatch.Draw(texture, position, rect, Color.White, rotation, Vector2.Zero, scale, SpriteEffects.None, 0f);
-            Main.spriteBatch.End();
         }
 
         private static void DrawShaderItems(DrawData[] drawData, Effect effect)

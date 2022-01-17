@@ -23,8 +23,8 @@ namespace FlashBANG.Utilities
         /// </summary>
         public void SetToPlayerCamera()
         {
-            cameraOrigin = new Vector2(Screen.actualResolutionWidth, Screen.actualResolutionHeight) / 2f;
-            position = cameraOrigin / 3f;       //3f because of the Screen matrix scale
+            cameraOrigin = new Vector2(Screen.resolutionWidth, Screen.resolutionHeight) / 2f;
+            //position = cameraOrigin / 3f;       //3f because of the Screen matrix scale
         }
 
         public void Update()
@@ -62,8 +62,8 @@ namespace FlashBANG.Utilities
 
             Vector2 mouseOffset = Main.mouseWorldPos - position;
             mouseOffset.Normalize();
-            mouseOffset *= (Vector2.Distance(Main.mouseWorldPos, position) * 12f) / Screen.actualResolutionHeight;
-            //position += mouseOffset;
+            mouseOffset *= (Vector2.Distance(Main.mouseWorldPos, position) * 12f) / Screen.resolutionHeight;
+            position += mouseOffset;
         }
 
         public void UpdateCameraView()

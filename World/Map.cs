@@ -49,7 +49,7 @@ namespace FlashBANG.World
             activeMapObjects.Clear();
             for (int i = 0; i < mapObjects.Count; i++)
             {
-                if (Vector2.Distance(mapObjects[i].position, Player.player.position) <= 24 * 16f)
+                if (Vector2.Distance(mapObjects[i].position, position) <= 24 * 16f)
                     activeMapObjects.Add(mapObjects[i]);
             }
         }
@@ -83,6 +83,7 @@ namespace FlashBANG.World
 
         public static void DrawMap(SpriteBatch spriteBatch)
         {
+            if (activeMapChunk != null)
             foreach (Tile tile in activeMapChunk)
             {
                 tile.Draw(spriteBatch);
@@ -99,6 +100,7 @@ namespace FlashBANG.World
             map = new Tile[MapWidth, MapHeight];
             mapObjects = new List<MapObject>();
             activeMapObjects = new List<MapObject>();
+            activeMapChunk = new Tile[48, 48];
 
             int visibilityID = 1;
             for (int x = 0; x < MapWidth; x++)      //Creates all the tile instances
@@ -181,7 +183,7 @@ namespace FlashBANG.World
                     if (xDist > 0)
                         direction = -1;
                     xDist = Math.Abs(xDist);
-                    xDist -= (int)Math.Ceiling(rooms[i].Width / 2f);
+                    xDist -= (int)Math.Ceiling(rooms[i].Width / 2f) - 2;
 
                     int hallwayStartX = roomCenters[i].X + ((int)Math.Ceiling(rooms[i].Width / 2f) * direction);
                     for (int x = 0; x < xDist; x++)
@@ -204,6 +206,9 @@ namespace FlashBANG.World
                             if (tileType != Tile.Tile_WoodenFloor && map[tilePoint.X, tilePoint.Y].tileType != Tile.Tile_Void)
                                 continue;
 
+                            if (CheckForOOB(tilePoint))
+                                return;
+
                             map[tilePoint.X, tilePoint.Y] = Tile.CreateTile(tileType, tilePoint, generationID: tileGenerationID);
                         }
                     }
@@ -223,6 +228,8 @@ namespace FlashBANG.World
                         {
                             int tileType = Tile.Tile_WoodenFloor;
                             Point tilePoint = new Point(closestRoomPoint.X + x, roomCenters[i].Y + (y * direction));
+                            if (CheckForOOB(tilePoint))
+                                return;
 
                             map[tilePoint.X, tilePoint.Y] = Tile.CreateTile(tileType, tilePoint, generationID: Tile.Generation_Hallway);
                         }
@@ -356,6 +363,9 @@ namespace FlashBANG.World
                             if (tileType != Tile.Tile_WoodenFloor && map[tilePoint.X, tilePoint.Y].tileType != Tile.Tile_Void)
                                 continue;
 
+                            if (CheckForOOB(tilePoint))
+                                return;
+
                             map[tilePoint.X, tilePoint.Y] = Tile.CreateTile(tileType, tilePoint, generationID: Tile.Generation_Hallway);
                         }
                     }
@@ -408,6 +418,8 @@ namespace FlashBANG.World
                         {
                             int tileType = Tile.Tile_WoodenFloor;
                             Point tilePoint = new Point(chosenRoom.X + x, chosenRoom.Y + ((chosenRoomDimensions.Y / 2) * direction));
+                            if (CheckForOOB(tilePoint))
+                                return;
 
                             map[tilePoint.X, tilePoint.Y] = Tile.CreateTile(tileType, tilePoint, generationID: Tile.Generation_Hallway);
                         }
@@ -581,7 +593,16 @@ namespace FlashBANG.World
             CleanUpMap();
             ScreenshotMap("_Finished");
             Tile.visibiltyAlphas = new float[visibilityID];
-            Player.player.position = playerSpawnPoint.ToVector2() * 16f;
+            UpdateActiveChunk(playerSpawnPoint.ToVector2() * 16f);
+        }
+
+        private static bool CheckForOOB(Point point)
+        {
+            bool outOfBounds = point.X < 0 || point.X >= MapWidth || point.Y < 0 || point.Y >= MapHeight;
+            if (outOfBounds)
+                CreateWorld();
+
+            return outOfBounds;
         }
 
         public static void CreateRoom(int size, Point roomCenter, int visibilityID)
@@ -597,6 +618,9 @@ namespace FlashBANG.World
                         tileType = Tile.Tile_Wall_Top;
                     else if (y == 1)
                         tileType = Tile.Tile_Wall_Bottom;
+
+                    if (CheckForOOB(tilePoint))
+                        return;
 
                     map[tilePoint.X, tilePoint.Y] = Tile.CreateTile(tileType, tilePoint, visibilityID, Tile.Generation_Room);
                 }
@@ -635,7 +659,7 @@ namespace FlashBANG.World
         public static void CreateMapObjects()
         {
             int amountOfMetalCreated = 0;
-            while (amountOfMetalCreated < 52)
+            while (amountOfMetalCreated < 82)
             {
                 int randX = worldRand.Next(0, MapWidth);
                 int randY = worldRand.Next(0, MapWidth);
@@ -643,13 +667,13 @@ namespace FlashBANG.World
                 if (map[randX, randY].generationID == Tile.Generation_Room)
                 {
                     Vector2 metalPos = new Vector2(randX, randY) * 16f;
-                    mapObjects.Add(Metal.CreateMetal(metalPos));
+                    mapObjects.Add(Metal.CreateMetal(metalPos, map[randX, randY].visiblityID));
                     amountOfMetalCreated++;
                 }
             }
 
             int amountOfBulbsCreated = 0;
-            while (amountOfBulbsCreated < 46)
+            while (amountOfBulbsCreated < 56)
             {
                 int randX = worldRand.Next(0, MapWidth);
                 int randY = worldRand.Next(0, MapWidth);
@@ -657,12 +681,12 @@ namespace FlashBANG.World
                 if (map[randX, randY].generationID == Tile.Generation_Room)
                 {
                     Vector2 bulbPos = new Vector2(randX, randY) * 16f;
-                    mapObjects.Add(Bulb.CreateBulb(bulbPos));
+                    mapObjects.Add(Bulb.CreateBulb(bulbPos, map[randX, randY].visiblityID));
                     amountOfBulbsCreated++;
                 }
             }
 
-            int amountOfMapBoxes = worldRand.Next(50, 85 + 1);
+            /*int amountOfMapBoxes = worldRand.Next(50, 85 + 1);
             while (amountOfMapBoxes > 0)
             {
                 int randX = worldRand.Next(0, MapWidth);
@@ -674,7 +698,7 @@ namespace FlashBANG.World
                     mapObjects.Add(Box.CreateBox(boxPos));
                     amountOfMapBoxes--;
                 }
-            }
+            }*/
         }
 
         public static void CleanUpMap()
@@ -725,6 +749,9 @@ namespace FlashBANG.World
                         {
                             newTileType = Tile.Tile_WoodenFloor;
                             newGenerationID = Tile.Generation_BypassAll;
+                            if (CheckForOOB(tilePoint))
+                                return;
+
                             map[tilePoint.X, tilePoint.Y + 1] = Tile.CreateTile(newTileType, tilePoint + new Point(0, 1), generationID: Tile.Generation_BypassAll);
                         }
                     }
@@ -951,6 +978,9 @@ namespace FlashBANG.World
                             }
                         }
                     }
+                    /*if (currentTileType == Tile.Tile_Wall_Top)
+                        if (worldRand.Next(0, 35 + 1) == 0)
+                            map[tilePoint.X, tilePoint.Y] = Tile.CreateTile(Tile.Tile_WallCandle, tilePoint, map[tilePoint.X, tilePoint.Y].visiblityID, map[tilePoint.X, tilePoint.Y].generationID);*/
                 }
             }
         }
@@ -990,6 +1020,8 @@ namespace FlashBANG.World
 
         public static void ScreenshotMap(string fileNameEnd)
         {
+            return;
+
             Texture2D dungeonResultOverviewTexture = new Texture2D(Main._graphics.GraphicsDevice, MapWidth, MapHeight);
             Color[] resultData = new Color[MapWidth * MapHeight];
             for (int x = 0; x < MapWidth; x++)

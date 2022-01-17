@@ -12,14 +12,14 @@ float4 MainPS(float2 UV : TEXCOORD0) : COLOR0
         return gamePixelColor;
     
     float blockerPixelAlpha = tex2D(blockerMask, UV);
-    if (blockerPixelAlpha >= 0.1f)
+    if (blockerPixelAlpha < 0.1f)
         return float4(Black, 1.0f);
     
     //return gamePixelColor * lightStrength * fadeStrength;
     
     float lightingPixelAlpha = clamp(tex2D(lightMask, UV), 0.35f, 1.0f);
     float4 lightingPixelColor = tex2D(lightMask, UV);
-    float fadeStrength = 1.2 - (distance(float2(0.5, 0.5), UV) * 1.8);
+    float fadeStrength = 1.2 - (distance(float2(0.5, 0.5), UV) * 1.8f);
     
     float4 newColor = lerp(gamePixelColor, lightingPixelColor, 1.0f - lightingPixelAlpha);
     return newColor * fadeStrength;

@@ -29,7 +29,7 @@ namespace FlashBANG.Entities.Enemies
                     tilePos.X = Math.Clamp(tilePos.X, 0, Map.MapWidth - 1);
                     tilePos.Y = Math.Clamp(tilePos.Y, 0, Map.MapHeight - 1);
 
-                    Rectangle collidingRect = Map.activeMapChunk[tilePos.X, tilePos.Y].tileRect;
+                    Rectangle collidingRect = Map.map[tilePos.X, tilePos.Y].tileRect;
                     if (collidingRect.Intersects(modifiedHitbox))
                     {
                         int hitboxReductionFactor = 2;

@@ -47,7 +47,8 @@ namespace FlashBANG.World
         {
             Tile newTile = new Tile();
 
-
+            if (point.X < 0 || point.X >= Map.MapWidth || point.Y < 0 || point.Y >= Map.MapHeight)
+                return null;
             /*switch (tileType)
             {
                 case Tile_Void:
@@ -103,12 +104,12 @@ namespace FlashBANG.World
                         tileType = Tile_BorderBottomRight;
                 }
             }
-            if (tileType == Tile_WallCandle)
+            /*if (tileType == Tile_WallCandle)
             {
                 newTile.hasLight = true;
                 newTile.lightData = new Lighting.LightData();
                 newTile.lightData.lightStrength = 1f;
-            }
+            }*/
 
             newTile.tilePosition = point.ToVector2() * 16f;
             newTile.tileType = tileType;

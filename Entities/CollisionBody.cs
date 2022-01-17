@@ -241,5 +241,10 @@ namespace FlashBANG.Entities
         /// <param name="collider">The collider.</param>
         public virtual void HandleMapObjectCollision(MapObject collider)
         { }
+
+        public void DestroyInstance()
+        {
+            Main.activeEntities.Remove(this);
+        }
     }
 }

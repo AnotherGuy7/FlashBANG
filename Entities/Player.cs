@@ -1,4 +1,5 @@
 ﻿using FlashBANG.Entities.Enemies;
+using FlashBANG.UI;
 using FlashBANG.Utilities;
 using FlashBANG.World;
 using Microsoft.Xna.Framework;
@@ -16,6 +17,14 @@ namespace FlashBANG.Entities
         public static Texture2D flashlight;
         public static Player player;
 
+        public override CollisionType collisionType => CollisionType.Player;
+
+        public const int Flashlight_Basic = 0;
+        public const int Flashlight_Enchanced = 1;
+        public const int Flashlight_Tribeam = 2;
+        public const int Flashlight_Unilaser = 3;
+        public const int Flashlight_FlashBANGCannon = 4;
+
         private const int PlayerWidth = 6;
         private const int PlayerHeight = 13;
         private const float MoveSpeed = 1.2f;
@@ -24,22 +33,36 @@ namespace FlashBANG.Entities
 
         public Vector2 lightPosition;
         public bool hiding = false;
+        public bool dead = false;
         public int tileVisiblityID = 0;
         public int heldMetal = 0;
         public int heldBulbs = 0;
         public int oldTileType = 0;
+        public int heldFlashlightType = 0;
 
         private Rectangle animRect;
-        private Rectangle flashlightHitbox;
         private Texture2D currentSheet;
         private Vector2 previousChunkUpdatePosition;
         private int frame = 0;
         private int frameCounter = 0;
+        private int deathTimer = 0;
+        private int stage5Timer = 0;
         private float playerRotation = 0f;
         private float lightRotation = 0f;
         private int direction = 1;
         private int tileType = 0;        //The tile the player's currently standing on.
         private bool flashlightActive = false;
+        private int[] flashlightRanges = new int[5] { 12, 20, 24, 108, 108 };
+        private float[] flashlightHeightMult = new float[5] { 1f, 1f, 1f, 0.1f, 0.2f };
+        private int[] flashlightSpreads = new int[5] { 45, 65, 50, 6, 18 };
+        private int[] flashlightDamages = new int[5] { 1, 3, 6, 10, 16 };
+        private int[] flashlightMaskIndexes = new int[5] {
+            Lighting.Texture_Flashlight_1,
+            Lighting.Texture_Flashlight_2,
+            Lighting.Texture_Flashlight_3,
+            Lighting.Texture_Flashlight_4,
+            Lighting.Texture_Flashlight_5
+        };
         private AnimationState oldAnimState;
         private AnimationState animState;
 
@@ -57,13 +80,23 @@ namespace FlashBANG.Entities
 
             hitboxOffset = new Point(-PlayerWidth / 2, (PlayerHeight / 2) - 4);
             hitbox = new Rectangle(0, 0, PlayerWidth + 1, PlayerHeight - hitboxOffset.Y - 4);
-            flashlightHitbox = new Rectangle((int)position.X, (int)position.Y, 28, 28);
             player = this;
+            PlayerUI.NewPlayerUI();
         }
 
         public override void Update()
         {
-            if (hiding)
+            if (dead)
+            {
+                deathTimer++;
+                if (deathTimer >= 3 * 60)
+                {
+                    Main.gameLost = true;
+                    Main.gameState = Main.GameState.End;
+                    EndScreen.NewEndScreen();
+                }
+            }
+            if (hiding || dead)
                 return;
 
             Vector2 velocity = Vector2.Zero;
@@ -99,6 +132,7 @@ namespace FlashBANG.Entities
             DetectTileCollisions();
             AnimatePlayer();
             ControlFlashlight();
+            ManageSoundscape();
             Main.mainCamera.UpdateCamera(position);
 
             if (Vector2.Distance(previousChunkUpdatePosition, position) >= 5 * 16)
@@ -114,14 +148,30 @@ namespace FlashBANG.Entities
                 if (oldTileType != tileType)
                     TileChanged();
             }
+            if (Main.gameStage == 5)
+            {
+                stage5Timer++;
+                if (stage5Timer >= 60 * 60)
+                {
+                    Main.gameState = Main.GameState.End;
+                    EndScreen.NewEndScreen();
+                }
+            }
+        }
+
+        public void ManageSoundscape()
+        {
+            SoundPlayer.LoopHum();
+            if (Main.random.Next(0, 800 + 1) == 0)
+                SoundPlayer.PlayRandomAmbienceSound();
         }
 
         public void TileChanged()
         {
             if ((tileType == Tile.Tile_Door && oldTileType != Tile.Tile_Door) || (tileType == Tile.Tile_DoorHorizontal && oldTileType != Tile.Tile_DoorHorizontal))
-                SoundPlayer.PlayLocalSound(SoundPlayer.Sounds_DoorOpen);
+                SoundPlayer.PlayLocalSound(SoundPlayer.Sounds_DoorOpen, -0.2f);
             if ((oldTileType == Tile.Tile_Door && tileType != Tile.Tile_Door) || (oldTileType == Tile.Tile_DoorHorizontal && tileType != Tile.Tile_DoorHorizontal))
-                SoundPlayer.PlayLocalSound(SoundPlayer.Sounds_DoorClose);
+                SoundPlayer.PlayLocalSound(SoundPlayer.Sounds_DoorClose, -0.5f);
 
             oldTileType = tileType;
         }
@@ -139,26 +189,80 @@ namespace FlashBANG.Entities
                 if (InputManager.IsMouseLeftJustClicked())
                     SoundPlayer.PlayLocalSound(SoundPlayer.Sounds_FlashlightClick);
 
-                flashlightHitbox.X = (int)position.X;
-                flashlightHitbox.Y = (int)position.Y;
-                flashlightHitbox.Width = (int)(38f * (float)Math.Cos(angle));
-                flashlightHitbox.Height = (int)(38f * (float)Math.Sin(angle));
-                DetectRectCollision(flashlightHitbox, Main.activeEntities);
+                //flashlightHitbox.X = (int)position.X;
+                //flashlightHitbox.Y = (int)position.Y;
+                //flashlightHitbox.Width = (int)(38f * (float)Math.Cos(angle));
+                //flashlightHitbox.Height = (int)(38f * (float)Math.Sin(angle));
                 flashlightActive = true;
+
+                    for (int i = 0; i < Main.activeEntities.Count; i++)
+                {
+                    CollisionBody body = Main.activeEntities[i];
+                    if (!(body is Enemy))
+                        continue;
+
+                    if (Vector2.Distance(position, body.position) <= flashlightRanges[heldFlashlightType] * 8f)
+                    {
+                        Vector2 vectorToEnemy = body.position - position;
+                        float angleToEnemy = (float)(Math.Atan2(vectorToEnemy.Y, vectorToEnemy.X) + Math.PI);
+                        float flashlightAngle = lightRotation + (float)Math.PI;
+                        float higherAngle = flashlightAngle + (MathHelper.ToRadians(flashlightSpreads[heldFlashlightType] / 2));
+                        float lowerAngle = flashlightAngle - (MathHelper.ToRadians(flashlightSpreads[heldFlashlightType] / 2));
+                        bool alternateSearch = false;
+                        /*if (higherAngle > Math.PI * 2)
+                        {
+                            alternateSearch = true;
+                            higherAngle -= (float)Math.PI * 3;
+                            higherAngle -= 0.1f;
+                        }
+                        if (lowerAngle < 0)
+                        {
+                            alternateSearch = true;
+                            lowerAngle += (float)Math.PI * 3;
+                            lowerAngle += 0.1f;
+                        }*/
+                        if (flashlightAngle < (float)Math.PI / 2f)
+                        {
+                            if (angleToEnemy < (float)Math.PI / 2f)
+                                angleToEnemy += (float)Math.PI / 2f;
+                            else if (angleToEnemy > (float)(3 * Math.PI) / 4f)
+                                angleToEnemy -= (float)Math.PI / 2f;
+
+                            lowerAngle += (float)Math.PI / 2f;
+                            higherAngle += (float)Math.PI / 2f;
+                        }
+                        else if (flashlightAngle > (float)Math.PI * 1.5f)
+                        {
+                            if (angleToEnemy < (float)Math.PI / 2f)
+                                angleToEnemy += (float)Math.PI / 2f;
+                            else if (angleToEnemy > (float)(3 * Math.PI) / 4f)
+                                angleToEnemy -= (float)Math.PI / 2f;
+
+                            lowerAngle -= (float)Math.PI / 2f;
+                            higherAngle -= (float)Math.PI / 2f;
+                        }
+
+                        if (angleToEnemy < higherAngle && angleToEnemy > lowerAngle)
+                        {
+                            Enemy enemy = body as Enemy;
+                            enemy.health -= flashlightDamages[heldFlashlightType];
+                        }
+                        /*if (alternateSearch)
+                        {
+                            if (angleToEnemy > higherAngle && angleToEnemy < lowerAngle)
+                            {
+                                Enemy enemy = body as Enemy;
+                                enemy.health -= 1;
+                            }
+                        }*/
+                    }
+                }
             }
             if (InputManager.IsMouseLeftJustReleased())
             {
                 SoundPlayer.PlayLocalSound(SoundPlayer.Sounds_FlashlightClick, -0.3f);
                 flashlightActive = false;
             }
-        }
-
-        public override void HandleRectCollisions(CollisionBody collider, CollisionType colliderType)
-        {
-            if (colliderType != CollisionType.Enemies)
-                return;
-
-            Enemy enemy = collider as Enemy;
         }
 
         private void AnimatePlayer()
@@ -218,7 +322,11 @@ namespace FlashBANG.Entities
                 spriteBatch.Draw(flashlight, lightPosition, null, Color.White, lightRotation, lightOrigin, 1f, SpriteEffects.None, 0f);
 
             if (flashlightActive)
-                Lighting.QueueLightData(Lighting.Texture_Flashlight_1, lightPosition, 12f, 1f, lightRotation);
+            {
+                float rangeScale = flashlightRanges[heldFlashlightType] * (16f / 300f);
+                Vector2 scale = new Vector2(rangeScale, rangeScale * flashlightHeightMult[heldFlashlightType]);
+                Lighting.QueueLightData(flashlightMaskIndexes[heldFlashlightType], lightPosition, Color.White, scale, 1f, lightRotation);
+            }
         }
     }
 }
