@@ -28,6 +28,7 @@ namespace FlashBANG.UI
                 text = "THEY'VE overpowered you.";
 
             statusText = new Text(text, ToUICoords(Screen.center), Color.White, 1f, true);
+            MusicPlayer.FadeOutInto(MusicPlayer.Music_None, 8 * 60, 2);
             Lighting.applyLighting = false;
         }
 
@@ -37,6 +38,7 @@ namespace FlashBANG.UI
             if (endTimer >= 8 * 60)
             {
                 Main.gameState = Main.GameState.Title;
+                MusicPlayer.FadeOutInto(MusicPlayer.Music_TitleMusic, 2, 2);
                 TitleScreen.NewTitleScreen();
             }
             statusText.position = ToUICoords(Screen.center);

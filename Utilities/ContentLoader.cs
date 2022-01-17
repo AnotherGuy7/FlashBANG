@@ -91,7 +91,7 @@ namespace FlashBANG.Utilities
 
         private static void LoadAllSounds()
         {
-            SoundPlayer.sounds = new SoundEffect[9];
+            SoundPlayer.sounds = new SoundEffect[12];
             SoundPlayer.sounds[SoundPlayer.Sounds_DoorOpen] = LoadSFX("Environment/DoorOpen");
             SoundPlayer.sounds[SoundPlayer.Sounds_DoorClose] = LoadSFX("Environment/DoorOpen");
             SoundPlayer.sounds[SoundPlayer.Sounds_FlashlightClick] = LoadSFX("FlashlightClick");
@@ -100,11 +100,15 @@ namespace FlashBANG.Utilities
             SoundPlayer.sounds[SoundPlayer.Sounds_HumAmbience] = LoadSFX("Environment/HumAmbience");
             SoundPlayer.sounds[SoundPlayer.Sounds_RandomSound_1] = LoadSFX("Environment/RandomSound_1");
             SoundPlayer.sounds[SoundPlayer.Sounds_RandomSound_2] = LoadSFX("Environment/RandomSound_2");
+            SoundPlayer.sounds[SoundPlayer.Sounds_RandomSound_3] = LoadSFX("Environment/RandomSound_3");
+            SoundPlayer.sounds[SoundPlayer.Sounds_RandomSound_4] = LoadSFX("Environment/RandomSound_4");
             SoundPlayer.sounds[SoundPlayer.Sounds_ButtonHover] = LoadSFX("ButtonHover");
+            SoundPlayer.sounds[SoundPlayer.Sounds_ThingScream] = LoadSFX("Thing_Hurt");
             SoundPlayer.humSound = SoundPlayer.sounds[SoundPlayer.Sounds_HumAmbience].CreateInstance();
+            SoundPlayer.humSound.Volume = Main.SFXVolume;
 
             MusicPlayer.gameMusic = new Song[6];
-            //MusicPlayer.gameMusic[MusicPlayer.Music_TitleMusic] = LoadMusic("Music_Title");
+            MusicPlayer.gameMusic[MusicPlayer.Music_TitleMusic] = LoadMusic("FlashBANG_Title");
             MusicPlayer.gameMusic[MusicPlayer.Music_Stage1] = LoadMusic("Music_Stage1");
             MusicPlayer.gameMusic[MusicPlayer.Music_Stage2] = LoadMusic("Music_Stage2_Slow");
             MusicPlayer.gameMusic[MusicPlayer.Music_Stage3] = LoadMusic("Music_Stage3_Slow");

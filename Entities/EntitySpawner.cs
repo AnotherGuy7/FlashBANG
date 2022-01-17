@@ -56,8 +56,8 @@ namespace FlashBANG.Entities
             int cooldownTime = (1 * 60) + 30;
             if (Main.gameStage == 5)
             {
-                highestChance = 15;
-                cooldownTime = 30;
+                highestChance = 3;
+                cooldownTime = 5;
             }
 
             if (Main.random.Next(0, highestChance + 1) == 0)
@@ -97,6 +97,9 @@ namespace FlashBANG.Entities
                             if (Map.map[checkPoint.X, checkPoint.Y].tileType == Tile.Tile_WoodenFloor || Map.map[checkPoint.X, checkPoint.Y].tileType == Tile.Tile_RoomTile_1)
                             {
                                 if (Vector2.Distance(playerPosition, checkPoint.ToVector2() * 16f) < Screen.resolutionWidth / 3)
+                                    continue;
+
+                                if (Main.random.Next(0, 100 + 1) >= 60)     //For variation, most enemies spawn completely on the left side of any place.
                                     continue;
 
                                 spawnFound = true;
@@ -183,6 +186,7 @@ namespace FlashBANG.Entities
                 else if (Main.gameStage == 5)
                     enemyType = Stage1Enemies[Main.random.Next(0, Stage5Enemies.Length)];*/
 
+                chosenPosition += new Vector2(Main.random.Next(0, 16 + 1), Main.random.Next(0, 16 + 1 - 4));
                 if (Main.gameStage >= 3)
                     enemyType = Stage3Enemies[Main.random.Next(0, Stage3Enemies.Length)];
                 else

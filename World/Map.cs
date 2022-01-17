@@ -17,6 +17,7 @@ namespace FlashBANG.World
         public static List<MapObject> activeMapObjects;
         private static Random worldRand;
         public static Point playerSpawnPoint;
+        public static bool queuedChunkUpdate = false;
 
         public const int MapWidth = 250;
         public const int MapHeight = 250;
@@ -76,6 +77,12 @@ namespace FlashBANG.World
 
         public static void UpdateMap()
         {
+            if (queuedChunkUpdate)
+            {
+                queuedChunkUpdate = false;
+                UpdateActiveChunk(Player.player.position);
+            }
+
             ManageTileVisibility();
             foreach (MapObject mapObject in activeMapObjects)
                 mapObject.Update();
@@ -88,7 +95,7 @@ namespace FlashBANG.World
             {
                 tile.Draw(spriteBatch);
             }
-            foreach (MapObject mapObject in mapObjects)
+            foreach (MapObject mapObject in activeMapObjects)
             {
                 mapObject.Draw(spriteBatch);
             }

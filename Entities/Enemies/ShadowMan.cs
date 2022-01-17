@@ -98,7 +98,7 @@ namespace FlashBANG.Entities.Enemies
         {
             SpriteEffects effect = SpriteEffects.None;
             if (direction == -1)
-                effect = SpriteEffects.FlipVertically;
+                effect = SpriteEffects.FlipHorizontally;
 
             float scale = health / (float)MaxHealth;
             spriteBatch.Draw(shadowManTexture, position, animRect, Color.White, 0f, Vector2.Zero, scale, effect, 0f);

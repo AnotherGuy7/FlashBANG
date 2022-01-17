@@ -62,6 +62,7 @@ namespace FlashBANG.Utilities
                 fadeOutTimer++;
 
             MediaPlayer.Volume = (((float)fadeOutDuration - (float)fadeOutTimer) / (float)fadeOutDuration) * Main.MusicVolume;
+            MediaPlayer.IsRepeating = false;
 
             if (fadeOutTimer >= fadeOutDuration)
             {

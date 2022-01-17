@@ -75,7 +75,7 @@ namespace FlashBANG
             mainCamera = new Camera();
             musicPlayer = new MusicPlayer();
             TitleScreen.NewTitleScreen();
-            MediaPlayer.Play(MusicPlayer.gameMusic[MusicPlayer.Music_Stage1]);
+            MediaPlayer.Play(MusicPlayer.gameMusic[MusicPlayer.Music_TitleMusic]);
             MediaPlayer.IsRepeating = true;
         }
 

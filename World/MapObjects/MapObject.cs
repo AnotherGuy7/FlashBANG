@@ -43,6 +43,7 @@ namespace FlashBANG.World.MapObjects
         public void DestroyInstance()
         {
             Map.mapObjects.Remove(this);
+            Map.queuedChunkUpdate = true;
         }
     }
 }

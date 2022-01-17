@@ -162,7 +162,7 @@ namespace FlashBANG.Entities
         public void ManageSoundscape()
         {
             SoundPlayer.LoopHum();
-            if (Main.random.Next(0, 800 + 1) == 0)
+            if (Main.random.Next(0, 900 + 1) == 0)
                 SoundPlayer.PlayRandomAmbienceSound();
         }
 

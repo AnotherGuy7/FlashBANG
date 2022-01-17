@@ -14,8 +14,10 @@ namespace FlashBANG.Utilities
         public const int Sounds_HumAmbience = 5;
         public const int Sounds_RandomSound_1 = 6;
         public const int Sounds_RandomSound_2 = 7;
-        public const int Sounds_ButtonHover = 8;
-        public const int Sounds_ThingScream = 9;
+        public const int Sounds_RandomSound_3 = 8;
+        public const int Sounds_RandomSound_4 = 9;
+        public const int Sounds_ButtonHover = 10;
+        public const int Sounds_ThingScream = 11;
 
         public static SoundEffectInstance humSound;
 
@@ -30,7 +32,7 @@ namespace FlashBANG.Utilities
 
         public static void PlayRandomAmbienceSound()
         {
-            int type = Main.random.Next(Sounds_RandomSound_1, Sounds_RandomSound_2 + 1);
+            int type = Main.random.Next(Sounds_RandomSound_1, Sounds_RandomSound_4 + 1);
             float pitch = Main.random.Next(-5, 5 + 1) / 10f;
             float pan = Main.random.Next(-10, 10 + 1) / 10f;
             float volumeRand = Main.random.Next(-2, 2 + 1) / 10f;

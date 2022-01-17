@@ -86,6 +86,18 @@
 /processorParam:Quality=Best
 /build:Sounds/Environment/RandomSound_2.wav
 
+#begin Sounds/Environment/RandomSound_3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/Environment/RandomSound_3.wav
+
+#begin Sounds/Environment/RandomSound_4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/Environment/RandomSound_4.wav
+
 #begin Sounds/FlashlightClick.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -97,6 +109,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/MetalPickUp.wav
+
+#begin Sounds/Music/FlashBANG_Title.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/Music/FlashBANG_Title.mp3
 
 #begin Sounds/Music/Music_Stage1.mp3
 /importer:Mp3Importer
